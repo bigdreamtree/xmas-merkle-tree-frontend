@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { format } from "date-fns";
+import { ko } from "date-fns/locale";
 
 const LIMIT = 20;
 
@@ -29,7 +30,9 @@ export async function GET(req: NextRequest) {
 
   const formattedMessages = messages.map((msg) => ({
     ...msg,
-    createdAt: format(msg.createdAt, "yyyy.MM.dd HH:mm"),
+    createdAt: format(msg.createdAt, "yyyy.MM.dd HH:mm", {
+      locale: ko,
+    }),
   }));
 
   return NextResponse.json({
