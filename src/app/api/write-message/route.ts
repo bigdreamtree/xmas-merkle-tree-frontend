@@ -1,10 +1,10 @@
 import { NextResponse } from "next/server";
-import { prisma } from "../../lib/prisma";
+import { prisma } from "@/lib/prisma";
 
 export async function POST(request: Request) {
   try {
     const { name, content } = await request.json();
-
+    console.log(name, content);
     // Validate input
     if (!name || !content) {
       return NextResponse.json({ success: false, error: "Name and content are required" }, { status: 400 });

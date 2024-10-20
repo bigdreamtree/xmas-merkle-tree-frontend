@@ -5,12 +5,12 @@ import { Card, CardBody, CardHeader } from "@nextui-org/react";
 
 export const Message = ({ name, content, createdAt }: { name: string; content: string; createdAt: string }) => {
   return (
-    <Card>
-      <CardHeader className="flex justify-between">
+    <Card shadow="sm" className="animate-fadeIn">
+      <CardHeader className="flex justify-between px-6">
         <span>{name}</span>
         <span>{createdAt}</span>
       </CardHeader>
-      <CardBody>{content}</CardBody>
+      <CardBody className="px-6">{content}</CardBody>
     </Card>
   );
 };

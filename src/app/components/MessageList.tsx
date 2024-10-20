@@ -6,7 +6,7 @@ import { MessageResponse } from "../models/MessageType";
 import { useInfiniteQuery } from "@tanstack/react-query";
 
 const fetchMessages = async ({ pageParam }: { pageParam: string | undefined }): Promise<MessageResponse> => {
-  const res = await fetch(`/api/texts${pageParam ? `?cursor=${pageParam}` : ""}`);
+  const res = await fetch(`/api/messages${pageParam ? `?cursor=${pageParam}` : ""}`);
   return res.json();
 };
 
@@ -26,6 +26,7 @@ export const MessageList = () => {
     queryKey: ["messages"],
     queryFn: fetchMessages,
     getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
+    refetchInterval: 3000,
   });
 
   useEffect(() => {
@@ -51,5 +52,10 @@ export const MessageList = () => {
 
   const pages = data?.pages ?? [];
 
-  return <div className="flex flex-col gap-2">{pages.map((page) => page.messages.map((msg) => <Message key={msg.id} {...msg} />))}</div>;
+  return (
+    <div className="w-full flex flex-col gap-2">
+      {pages.map((page) => page.messages.map((msg) => <Message key={msg.id} {...msg} />))}
+      <div ref={observerTarget} style={{ height: "20px" }}></div>
+    </div>
+  );
 };
