@@ -41,6 +41,7 @@ export const MessageInputWrapper = () => {
       </CardBody>
       <CardFooter className="flex justify-end">
         <Button
+          isLoading={mutation.isPending}
           color="primary"
           onClick={() => {
             try {
