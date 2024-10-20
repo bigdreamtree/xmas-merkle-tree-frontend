@@ -4,7 +4,7 @@ import { Divider } from "@nextui-org/react";
 
 export default function Home() {
   return (
-    <main className="w-screen flex flex-col justify-start items-center p-4">
+    <main className="w-dvw flex flex-col justify-start items-center p-4">
       <div className="max-w-screen-md w-full flex flex-col gap-8">
         <MessageInputWrapper />
         <Divider />
