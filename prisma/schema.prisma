@@ -12,10 +12,3 @@ datasource db {
   provider = "postgresql"
   url = env("POSTGRES_PRISMA_URL") // uses connection pooling
 }
-
-model Message {
-  id        String   @id @default(cuid())
-  name      String
-  content   String
-  createdAt DateTime @default(now())
-}

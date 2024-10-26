@@ -1,10 +1,10 @@
-import { MessageInputWrapper } from "./components/MessageInputWrapper";
-import { MessageList } from "./components/MessageList";
+import { MessageInputWrapper } from "../components/MessageInputWrapper";
+import { MessageList } from "../components/MessageList";
 import { Divider } from "@nextui-org/react";
 
 export default function Home() {
   return (
-    <main className="w-dvw flex flex-col justify-start items-center p-4">
+    <main className="w-dvw flex flex-col justify-start items-center">
       <div className="max-w-screen-md w-full flex flex-col gap-8">
         <MessageInputWrapper />
         <Divider />
