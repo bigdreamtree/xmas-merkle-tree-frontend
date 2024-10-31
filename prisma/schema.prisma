@@ -12,3 +12,9 @@ datasource db {
   provider = "postgresql"
   url = env("POSTGRES_PRISMA_URL") // uses connection pooling
 }
+
+model Test {
+  id    Int     @id @default(autoincrement())
+  accountHash String
+  ornamentIds Int[]
+}

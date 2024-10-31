@@ -38,7 +38,17 @@ export default function Provider({ children }: { children: React.ReactNode }) {
   return (
     <QueryClientProvider client={queryClient}>
       <NextUIProvider>{children}</NextUIProvider>
-      <Toaster />
+      <Toaster
+        toastOptions={{
+          position: "top-right",
+          style: {
+            background: "#393838",
+            color: "#fff",
+            fontSize: "24px",
+            borderRadius: "9999px",
+          },
+        }}
+      />
     </QueryClientProvider>
   );
 }
