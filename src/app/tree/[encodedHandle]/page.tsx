@@ -15,7 +15,7 @@ export default function UserTree({ params: { encodedHandle } }: { params: { enco
   const [message, setMessage] = useState<string>("");
   const [steps, setSteps] = useState<0 | 1 | 2 | 3>(0);
 
-  const { requestFriendshipProof, friendshipProof, isLoading } = useProof();
+  const { requestFriendshipProof, requestAccountProof, isLoading } = useProof();
 
   return (
     <main className="w-screen h-screen overflow-hidden flex flex-col justify-start items-center">
@@ -28,7 +28,7 @@ export default function UserTree({ params: { encodedHandle } }: { params: { enco
             variant="light"
             size="lg"
             onClick={() => {
-              // setSteps(0);
+              requestAccountProof({ onPageLeave: () => {} });
             }}
           >
             <Image src="/tree-button.png" alt="tree-button" priority width={50} height={50} />

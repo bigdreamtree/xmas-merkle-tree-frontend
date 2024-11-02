@@ -1,14 +1,17 @@
-import { MessageInputWrapper } from "../components/MessageInputWrapper";
-import { MessageList } from "../components/MessageList";
-import { Divider } from "@nextui-org/react";
+import Image from "next/image";
 
-export default function Home() {
+export default function UserTree() {
   return (
-    <main className="w-dvw flex flex-col justify-start items-center">
-      <div className="w-full flex flex-col gap-8">
-        <MessageInputWrapper />
-        <Divider />
-        <MessageList />
+    <main className="w-screen h-screen overflow-hidden flex flex-col justify-start items-center">
+      <div className="h-dvh w-full flex flex-col items-center justify-center gap-8 animate-fadeIn">
+        <div className="text-white w-full text-5xl flex justify-center items-center gap-4">
+          <span className="text-amp">Christmas</span>
+          <span>Merkle Tree</span>
+        </div>
+        <div className="relative image-wrapper flex justify-center items-center">
+          <Image src="/tree.png" alt="tree-background" priority width={657} height={657} className="brightness-50" />
+          <span className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-white text-6xl">( Tap Here )</span>
+        </div>
       </div>
     </main>
   );
