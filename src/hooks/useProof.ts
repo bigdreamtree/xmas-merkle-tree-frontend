@@ -1,6 +1,6 @@
-import { create } from "zustand";
 import { TlsnPluginResponse } from "@/models/tlsn-response";
 import { useState } from "react";
+import { create } from "zustand";
 // import { TLSN_ACCOUNT_PLUGIN, TLSN_FRIENDSHIP_PLUGIN } from "@/constants/tlsn-plugin";
 import toast from "react-hot-toast";
 
@@ -156,6 +156,8 @@ export const useProof = () => {
       });
       setFriendshipProof(res.data);
       console.log(res);
+      // TODO: decode proof
+      console.log(decodeAndSetAccountProof(res.data));
       setIsLoading(false);
       window.removeEventListener("visibilitychange", handleVisibilityChange);
     } catch (err) {
@@ -165,6 +167,59 @@ export const useProof = () => {
       throw err;
     }
   };
+
+  function extractJsonData(decodedString: string): string | null {
+    const jsonStartIndex = decodedString.indexOf('{"data":');
+    
+    if (jsonStartIndex === -1) {
+      console.log('JSON data not found');
+      return null;
+    }
+  
+    const jsonEndIndex = decodedString.lastIndexOf('}'); // Find the last closing brace
+    if (jsonEndIndex === -1 || jsonEndIndex < jsonStartIndex) {
+      console.log('Closing brace not found');
+      return null;
+    }
+  
+    return decodedString.slice(jsonStartIndex, jsonEndIndex + 1); // Include the last brace
+  }
+
+  function checkFollowStatus(jsonString: string): boolean {
+    try {
+      const jsonData = JSON.parse(jsonString);
+      
+      const followedBy = jsonData.data.user.result.legacy.followed_by;
+      const following = jsonData.data.user.result.legacy.following;
+
+      if (followedBy === true && following === true) {
+        return true;
+      }
+    } catch (error) {
+      console.error('Error parsing JSON:', error);
+    }
+    
+    return false;
+  }
+
+  async function decodeAndSetAccountProof(dataHex: string): Promise<string | null> {
+    if (dataHex.startsWith('0x')) {
+      dataHex = dataHex.slice(2);
+    }
+    
+    const dataBytes = new Uint8Array(dataHex.match(/.{1,2}/g)!.map(byte => parseInt(byte, 16)));
+    const decodedString = new TextDecoder('utf-8').decode(dataBytes);
+    
+    const jsonString = extractJsonData(decodedString);
+    
+    if (jsonString && checkFollowStatus(jsonString)) {
+      return jsonString;
+    } else {
+      console.log('Conditions not met:', jsonString);
+      return null;
+    }
+    // setAccountProof(decodedHex);
+  }
 
   return { ...tlsnObj, isLoading, requestAccountProof, requestFriendshipProof };
 };
