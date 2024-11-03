@@ -96,6 +96,24 @@ a {
   mask-composite: exclude;
 }
 
+.loading-dots {
+  display: inline-block;
+  opacity: 0;
+  animation: loadingDots 1.4s infinite;
+}
+
+@keyframes loadingDots {
+  0% {
+    opacity: 0;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
 body {
   color: var(--foreground);
   background: var(--background);

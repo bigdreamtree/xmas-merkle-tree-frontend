@@ -1,5 +1,6 @@
+"use client";
+import { useState, useEffect } from "react";
 import { TlsnPluginResponse } from "@/models/tlsn-response";
-import { useState } from "react";
 import { create } from "zustand";
 // import { TLSN_ACCOUNT_PLUGIN, TLSN_FRIENDSHIP_PLUGIN } from "@/constants/tlsn-plugin";
 import toast from "react-hot-toast";
@@ -37,7 +38,7 @@ export const useProof = () => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
   // Account Proof
-  const requestAccountProof = async ({ onPageLeave }: { onPageLeave?: () => void }) => {
+  const requestAccountProof = async ({ onPageLeave, onSuccess }: { onPageLeave?: () => void; onSuccess?: ({ accountId, accountHash, merkleRoot }: { accountId: string; accountHash: string; merkleRoot: string }) => void }) => {
     if (!window.tlsn) {
       toast("Please install TLSN extension first");
       return;
@@ -87,6 +88,27 @@ export const useProof = () => {
       setAccountProof(res.data);
       setIsLoading(false);
 
+      //   //
+      //   // Create Presentation object to parse the proof
+      //   const presentation = await new tlsn.Presentation(res.data);
+      //   const verifierOutput = await presentation.verify();
+
+      //   // Create Transcript to get human-readable data
+      //   const transcript = new tlsn.Transcript({
+      //     sent: verifierOutput.transcript.sent,
+      //     recv: verifierOutput.transcript.recv,
+      //   });
+
+      //   // Add readable transcript to response
+      //   res.transcript = {
+      //     sent: transcript.sent(),
+      //     recv: transcript.recv(),
+      //   };
+
+      //   setAccountProof(res.data);
+      //   console.log("Human readable response:", res.transcript.recv);
+      //   //
+
       const treeRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/v1/trees`, {
         headers: {
           "Content-Type": "application/json",
@@ -95,8 +117,8 @@ export const useProof = () => {
         body: JSON.stringify({ accountProof: res.data }),
       });
 
-      const accountId = await treeRes.json();
-      console.log(accountId);
+      const { accountId, accountHash, merkleRoot } = await treeRes.json();
+      onSuccess?.({ accountId, accountHash, merkleRoot });
 
       window.removeEventListener("visibilitychange", handleVisibilityChange);
     } catch (err) {
@@ -170,25 +192,25 @@ export const useProof = () => {
 
   function extractJsonData(decodedString: string): string | null {
     const jsonStartIndex = decodedString.indexOf('{"data":');
-    
+
     if (jsonStartIndex === -1) {
-      console.log('JSON data not found');
+      console.log("JSON data not found");
       return null;
     }
-  
-    const jsonEndIndex = decodedString.lastIndexOf('}'); // Find the last closing brace
+
+    const jsonEndIndex = decodedString.lastIndexOf("}"); // Find the last closing brace
     if (jsonEndIndex === -1 || jsonEndIndex < jsonStartIndex) {
-      console.log('Closing brace not found');
+      console.log("Closing brace not found");
       return null;
     }
-  
+
     return decodedString.slice(jsonStartIndex, jsonEndIndex + 1); // Include the last brace
   }
 
   function checkFollowStatus(jsonString: string): boolean {
     try {
       const jsonData = JSON.parse(jsonString);
-      
+
       const followedBy = jsonData.data.user.result.legacy.followed_by;
       const following = jsonData.data.user.result.legacy.following;
 
@@ -196,26 +218,26 @@ export const useProof = () => {
         return true;
       }
     } catch (error) {
-      console.error('Error parsing JSON:', error);
+      console.error("Error parsing JSON:", error);
     }
-    
+
     return false;
   }
 
   async function decodeAndSetAccountProof(dataHex: string): Promise<string | null> {
-    if (dataHex.startsWith('0x')) {
+    if (dataHex.startsWith("0x")) {
       dataHex = dataHex.slice(2);
     }
-    
-    const dataBytes = new Uint8Array(dataHex.match(/.{1,2}/g)!.map(byte => parseInt(byte, 16)));
-    const decodedString = new TextDecoder('utf-8').decode(dataBytes);
-    
+
+    const dataBytes = new Uint8Array(dataHex.match(/.{1,2}/g)!.map((byte) => parseInt(byte, 16)));
+    const decodedString = new TextDecoder("utf-8").decode(dataBytes);
+
     const jsonString = extractJsonData(decodedString);
-    
+
     if (jsonString && checkFollowStatus(jsonString)) {
       return jsonString;
     } else {
-      console.log('Conditions not met:', jsonString);
+      console.log("Conditions not met:", jsonString);
       return null;
     }
     // setAccountProof(decodedHex);
