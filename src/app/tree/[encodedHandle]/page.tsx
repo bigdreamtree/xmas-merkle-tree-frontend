@@ -79,6 +79,8 @@ export default function UserTree({ params: { encodedHandle } }: { params: { enco
         }
       );
 
+      console.log(msgRes);
+
       await queryClient.invalidateQueries({ queryKey: ["messages", accountHash] });
       await queryClient.refetchQueries({ queryKey: ["messages", accountHash] });
 

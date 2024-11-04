@@ -3,7 +3,7 @@ import { useState } from "react";
 import { TlsnPluginResponse } from "@/models/tlsn-response";
 import { create } from "zustand";
 import toast from "react-hot-toast";
-// import { useRouter, usePathname } from "next/navigation";
+import { useRouter } from "next/navigation";
 
 export interface proofParams {
   req: string;
@@ -36,7 +36,7 @@ export const useStore = create<StoreState>((set) => ({
 export const useProof = () => {
   const tlsnObj = useStore((state) => state);
   const [isLoading, setIsLoading] = useState<boolean>(false);
-  //   const router = useRouter();
+  const router = useRouter();
   //   const pathname = usePathname();
 
   // Account Proof
@@ -147,9 +147,7 @@ export const useProof = () => {
       try {
         tlsn = await window.tlsn!.connect();
         tlsnObj.setTlsn(tlsn);
-
         const plugin = await tlsn.getPlugins("https://github.com/bigdreamtree/tlsn-plugin/raw/refs/heads/main/dist/x-following-check.tlsn.wasm", "**", { id: "big-dream-tree-friendship-main" });
-
         if (plugin.length === 0) {
           const res = await tlsn.installPlugin("https://github.com/bigdreamtree/tlsn-plugin/raw/refs/heads/main/dist/x-following-check.tlsn.wasm", { id: "big-dream-tree-friendship-main" });
           pluginId = res;
@@ -166,7 +164,6 @@ export const useProof = () => {
     setIsLoading(true);
 
     try {
-      window.open(`https://x.com/0xdarron`, "_blank");
       const res: TlsnPluginResponse = await toast.promise(tlsn.runPlugin(pluginId), {
         loading: "Generating proof in progress...",
         success: "Successfully generated the proof!",
