@@ -149,7 +149,7 @@ export default function UserTree({ params: { encodedHandle } }: { params: { enco
                       className=""
                     />
                   </span>
-                  <span className="text-2xl w-[200px]">{msg.nickname}</span>
+                  <span className="text-2xl w-[200px] text-center">{msg.nickname}</span>
                   <span className="text-2xl text-letter w-[150px] truncate">{`${msg.hash}`}</span>
                   <span className="text-2xl text-letter w-[150px] truncate">{`${msg.merkleProof}`}</span>
                 </div>
