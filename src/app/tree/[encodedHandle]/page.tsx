@@ -133,9 +133,9 @@ export default function UserTree({ params: { encodedHandle } }: { params: { enco
             <div className="w-full h-full flex justify-center items-center flex-col gap-3">
               <div className={`flex justify-between items-center w-full border-b-1.5 border-letter border-opacity-20`}>
                 <span className="text-2xl text-letter">Orn.</span>
-                <span className="text-2xl text-letter">Nickname</span>
-                <span className="text-2xl w-[200px] truncate text-center text-letter">Message</span>
-                <span className="text-2xl w-[200px] truncate text-center text-letter">Proof</span>
+                <span className="text-2xl w-[200px] text-center text-letter">Nickname</span>
+                <span className="text-2xl w-[150px] truncate text-center text-letter">Message</span>
+                <span className="text-2xl w-[150px] truncate text-center text-letter">Proof</span>
               </div>
               {revealedMessages?.map((msg: RevealMessage, idx: number) => (
                 <div key={msg.merkleProof} className={`flex justify-between items-center w-full`} style={{ animation: `fadeIn ${0.5 * (idx + 1)}s ease-in-out forwards` }}>
@@ -149,7 +149,7 @@ export default function UserTree({ params: { encodedHandle } }: { params: { enco
                       className=""
                     />
                   </span>
-                  <span className="text-2xl">{msg.nickname}</span>
+                  <span className="text-2xl w-[200px]">{msg.nickname}</span>
                   <span className="text-2xl text-letter w-[150px] truncate">{`${msg.hash}`}</span>
                   <span className="text-2xl text-letter w-[150px] truncate">{`${msg.merkleProof}`}</span>
                 </div>
