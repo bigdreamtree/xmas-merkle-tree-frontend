@@ -88,13 +88,24 @@ export const useProof = () => {
       setAccountProof(res);
       setIsLoading(false);
 
-      const treeRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/v1/trees`, {
-        headers: {
-          "Content-Type": "application/json",
-        },
-        method: "POST",
-        body: JSON.stringify({ accountProof: res }),
-      });
+      let treeRes;
+      try {
+        treeRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/v1/trees`, {
+          headers: {
+            "Content-Type": "application/json",
+          },
+          method: "POST",
+          cache: "no-store",
+          body: JSON.stringify({ accountProof: res }),
+        });
+      } catch (error) {
+        if (error instanceof Error) {
+          // Check if it's a 409 error (conflict)
+          if ("status" in error && error.status === 409) {
+          }
+        }
+        throw error;
+      }
 
       const { accountId, accountHash, merkleRoot } = await treeRes.json();
       console.log(accountId, accountHash.toLowerCase(), merkleRoot);

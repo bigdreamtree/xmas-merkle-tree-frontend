@@ -8,9 +8,11 @@ import toast from "react-hot-toast";
 import { Input, Textarea, Tooltip } from "@nextui-org/react";
 import { sha256, toHex } from "viem";
 import { useRouter } from "next/navigation";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 
 export default function UserTree({ params: { encodedHandle } }: { params: { encodedHandle: string } }) {
+  const queryClient = useQueryClient();
+
   const [userHandler] = useState<string>(decodeURIComponent(encodedHandle));
   const [accountHash] = useState<string>(
     sha256(toHex(decodeURIComponent(encodedHandle)))
@@ -23,7 +25,8 @@ export default function UserTree({ params: { encodedHandle } }: { params: { enco
   const [steps, setSteps] = useState<0 | 1 | 2 | 3>(0);
   const [pageLoading, setPageLoading] = useState<boolean>(false);
   const router = useRouter();
-  const [daysUntilChristmas, setDaysUntilChristmas] = useState<number>(0);
+  const [daysUntilChristmas, setDaysUntilChristmas] = useState<number>(-1);
+  const [addMsgLoading, setAddMsgLoading] = useState<boolean>(false);
 
   const { requestFriendshipProof, requestAccountProof, isLoading, friendshipProof } = useProof();
 
@@ -35,6 +38,7 @@ export default function UserTree({ params: { encodedHandle } }: { params: { enco
         headers: {
           "Content-Type": "application/json",
         },
+        cache: "no-store",
         method: "GET",
       });
       return res.json();
@@ -59,16 +63,34 @@ export default function UserTree({ params: { encodedHandle } }: { params: { enco
   }, []);
 
   const addMsgHandler = async () => {
-    console.log(accountHash);
-    const msgRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/v1/trees/${accountHash}/messages`, {
-      headers: {
-        "Content-Type": "application/json",
-      },
-      method: "POST",
-      body: JSON.stringify({ ornamentId, nickname, body: message, friendshipProof }),
-    });
+    setAddMsgLoading(true);
+    try {
+      const msgRes = await toast.promise(
+        fetch(`${process.env.NEXT_PUBLIC_API_URL}/v1/trees/${accountHash}/messages`, {
+          headers: {
+            "Content-Type": "application/json",
+          },
+          method: "POST",
+          cache: "no-store",
+          body: JSON.stringify({ ornamentId, nickname, body: message, friendshipProof }),
+        }),
+        {
+          loading: "Sending your gift...",
+          success: "Successfully sent your gift!",
+          error: "Failed to send your gift",
+        }
+      );
 
-    console.log(msgRes);
+      await queryClient.invalidateQueries({ queryKey: ["messages", accountHash] });
+      await queryClient.refetchQueries({ queryKey: ["messages", accountHash] });
+
+      setAddMsgLoading(false);
+      setSteps(3);
+      console.log(msgRes);
+    } catch {
+      setAddMsgLoading(false);
+      toast.error("Failed to send your gift");
+    }
   };
 
   return (
@@ -118,7 +140,7 @@ export default function UserTree({ params: { encodedHandle } }: { params: { enco
                 >
                   <Image src="/dday.png" alt="tree-button" priority width={50} height={50} />
                 </Button>
-                {daysUntilChristmas > 0 ? <span className="text-white text-2xl">D-{daysUntilChristmas}</span> : <span className="text-white text-2xl">D-Day</span>}
+                {daysUntilChristmas >= 0 ? daysUntilChristmas > 0 ? <span className="text-white text-2xl">D-{daysUntilChristmas}</span> : <span className="text-white text-2xl">D-Day</span> : <span className="text-white text-2xl opacity-0">day</span>}
               </div>
               <div className="flex flex-col justify-center items-center gap-1">
                 <Button
@@ -191,11 +213,12 @@ export default function UserTree({ params: { encodedHandle } }: { params: { enco
                   </div>
                 )}
               </div>
-              <div className="button-wrapper flex gap-5 justify-center items-center flex-col">
-                <div className="button-gradient">
+              <div className={`button-wrapper flex gap-5 justify-center items-center flex-col`}>
+                <div className={`button-gradient`}>
                   <Button
                     variant="light"
-                    className="text-white gap-2 w-[300px] font-medium !block z-10 text-2xl hover:!bg-transparent"
+                    // className="text-white gap-2 w-[300px] font-medium !block z-10 text-2xl hover:!bg-transparent"
+                    className={`text-white gap-2 font-medium !block z-10 text-2xl hover:!bg-transparent`}
                     disableRipple
                     radius="full"
                     size="lg"
@@ -225,10 +248,13 @@ export default function UserTree({ params: { encodedHandle } }: { params: { enco
                       isIconOnly
                       variant="light"
                       size="lg"
+                      disabled={!!messages?.find((msg: any) => msg.ornamentId === 0)}
                       onClick={() => {
                         setOrnamentId(0);
                       }}
-                      className={`ornaments-gradient flex justify-center items-center rounded-[30px] hover:!bg-transparent ${ornamentId === 0 && "bg-gradient-to-r from-[#ff7878] to-[#f7e96c]"}`}
+                      className={`ornaments-gradient flex justify-center items-center rounded-[30px] hover:!bg-transparent ${ornamentId === 0 && "bg-gradient-to-r from-[#ff7878] to-[#f7e96c]"} ${
+                        !!messages?.find((msg: any) => msg.ornamentId === 0) && "grayscale"
+                      }`}
                     >
                       <Image src="/box.png" alt="ornaments:box" height={120} width={120} />
                     </Button>
@@ -238,12 +264,15 @@ export default function UserTree({ params: { encodedHandle } }: { params: { enco
                       isIconOnly
                       variant="light"
                       size="lg"
+                      disabled={!!messages?.find((msg: any) => msg.ornamentId === 1)}
                       onClick={() => {
                         setOrnamentId(1);
                       }}
-                      className={`ornaments-gradient flex justify-center items-center rounded-[30px] hover:!bg-transparent ${ornamentId === 1 && "bg-gradient-to-r from-[#ff7878] to-[#f7e96c]"}`}
+                      className={`ornaments-gradient flex justify-center items-center rounded-[30px] hover:!bg-transparent ${ornamentId === 1 && "bg-gradient-to-r from-[#ff7878] to-[#f7e96c]"} ${
+                        !!messages?.find((msg: any) => msg.ornamentId === 1) && "grayscale"
+                      }`}
                     >
-                      <Image src="/snowman.png" alt="ornaments:snowman" height={120} width={120} />
+                      <Image src="/cookie.png" alt="ornaments:cookie" height={120} width={120} />
                     </Button>
                   </div>
                   <div className="flex justify-center items-center">
@@ -251,12 +280,15 @@ export default function UserTree({ params: { encodedHandle } }: { params: { enco
                       isIconOnly
                       variant="light"
                       size="lg"
+                      disabled={!!messages?.find((msg: any) => msg.ornamentId === 2)}
                       onClick={() => {
                         setOrnamentId(2);
                       }}
-                      className={`ornaments-gradient flex justify-center items-center rounded-[30px] hover:!bg-transparent ${ornamentId === 2 && "bg-gradient-to-r from-[#ff7878] to-[#f7e96c]"}`}
+                      className={`ornaments-gradient flex justify-center items-center rounded-[30px] hover:!bg-transparent ${ornamentId === 2 && "bg-gradient-to-r from-[#ff7878] to-[#f7e96c]"} ${
+                        !!messages?.find((msg: any) => msg.ornamentId === 2) && "grayscale"
+                      }`}
                     >
-                      <Image src="/cookie.png" alt="ornaments:cookie" height={120} width={120} />
+                      <Image src="/snowman.png" alt="ornaments:snowman" height={120} width={120} />
                     </Button>
                   </div>
                 </div>
@@ -266,10 +298,13 @@ export default function UserTree({ params: { encodedHandle } }: { params: { enco
                       isIconOnly
                       variant="light"
                       size="lg"
+                      disabled={!!messages?.find((msg: any) => msg.ornamentId === 3)}
                       onClick={() => {
                         setOrnamentId(3);
                       }}
-                      className={`ornaments-gradient flex justify-center items-center rounded-[30px] hover:!bg-transparent ${ornamentId === 3 && "bg-gradient-to-r from-[#ff7878] to-[#f7e96c]"}`}
+                      className={`ornaments-gradient flex justify-center items-center rounded-[30px] hover:!bg-transparent ${ornamentId === 3 && "bg-gradient-to-r from-[#ff7878] to-[#f7e96c]"} ${
+                        !!messages?.find((msg: any) => msg.ornamentId === 3) && "grayscale"
+                      }`}
                     >
                       <Image src="/stick.png" alt="ornaments:stick" height={120} width={120} />
                     </Button>
@@ -279,10 +314,13 @@ export default function UserTree({ params: { encodedHandle } }: { params: { enco
                       isIconOnly
                       variant="light"
                       size="lg"
+                      disabled={!!messages?.find((msg: any) => msg.ornamentId === 4)}
                       onClick={() => {
                         setOrnamentId(4);
                       }}
-                      className={`ornaments-gradient flex justify-center items-center rounded-[30px] hover:!bg-transparent ${ornamentId === 4 && "bg-gradient-to-r from-[#ff7878] to-[#f7e96c]"}`}
+                      className={`ornaments-gradient flex justify-center items-center rounded-[30px] hover:!bg-transparent ${ornamentId === 4 && "bg-gradient-to-r from-[#ff7878] to-[#f7e96c]"} ${
+                        !!messages?.find((msg: any) => msg.ornamentId === 4) && "grayscale"
+                      }`}
                     >
                       <Image src="/socks.png" alt="ornaments:socks" height={120} width={120} />
                     </Button>
@@ -345,24 +383,23 @@ export default function UserTree({ params: { encodedHandle } }: { params: { enco
                 />
               </div>
               <div className="button-wrapper flex gap-5 justify-center items-center flex-col">
-                <div className={isLoading ? "button-gradient-disabled" : "button-gradient"}>
+                <div className={isLoading || addMsgLoading ? "button-gradient-disabled" : "button-gradient"}>
                   <Button
                     variant="light"
-                    className="text-white gap-2 font-medium !block z-10 text-2xl hover:!bg-transparent"
-                    disabled={isLoading}
+                    className={`text-white gap-2 font-medium !block z-10 text-2xl hover:!bg-transparent`}
+                    disabled={isLoading || addMsgLoading}
                     disableRipple
                     radius="full"
                     size="lg"
                     onClick={() => {
                       if (nickname.length > 0 && message.length > 0) {
                         addMsgHandler();
-                        setSteps(3);
                       } else {
                         toast("Please fill in all the fields 🧐");
                       }
                     }}
                   >
-                    {isLoading ? "Please wait for processing" : "Next"}
+                    {isLoading || addMsgLoading ? "Please wait for processing" : "Next"}
                   </Button>
                 </div>
               </div>
