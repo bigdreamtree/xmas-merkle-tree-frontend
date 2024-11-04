@@ -76,28 +76,53 @@ export default function UserTree({ params: { encodedHandle } }: { params: { enco
       ) : (
         <>
           {steps === 0 && (
-            <div className="absolute top-10 right-10 flex flex-col justify-start items-center gap-1">
-              <Button
-                isIconOnly
-                className="!bg-transparent hover:!bg-transparent"
-                disableRipple
-                variant="light"
-                size="lg"
-                onClick={() => {
-                  requestAccountProof({
-                    onPageLeave: () => {
-                      setPageLoading(true);
-                    },
-                    onSuccess: ({ accountId }) => {
-                      setPageLoading(false);
-                      router.push(`/tree/${encodeURIComponent(accountId)}`);
-                    },
-                  });
-                }}
-              >
-                <Image src="/tree-button.png" alt="tree-button" priority width={50} height={50} />
-              </Button>
-              <span className="text-white text-xl">My Tree</span>
+            <div className="absolute top-10 px-10 left-1/2 -translate-x-1/2 flex w-full justify-between items-center">
+              <div className="flex flex-col justify-start items-center gap-1">
+                <Button
+                  isIconOnly
+                  className="!bg-transparent hover:!bg-transparent"
+                  disableRipple
+                  variant="light"
+                  size="lg"
+                  onClick={() => {
+                    requestAccountProof({
+                      onPageLeave: () => {
+                        setPageLoading(true);
+                      },
+                      onSuccess: ({ accountId }) => {
+                        setPageLoading(false);
+                        router.push(`/tree/${encodeURIComponent(accountId)}`);
+                      },
+                    });
+                  }}
+                >
+                  <Image src="/dday.png" alt="tree-button" priority width={50} height={50} />
+                </Button>
+                <span className="text-white text-xl">My Tree &gt;</span>
+              </div>
+              <div className="flex flex-col justify-center items-center gap-1">
+                <Button
+                  isIconOnly
+                  className="!bg-transparent hover:!bg-transparent"
+                  disableRipple
+                  variant="light"
+                  size="lg"
+                  onClick={() => {
+                    requestAccountProof({
+                      onPageLeave: () => {
+                        setPageLoading(true);
+                      },
+                      onSuccess: ({ accountId }) => {
+                        setPageLoading(false);
+                        router.push(`/tree/${encodeURIComponent(accountId)}`);
+                      },
+                    });
+                  }}
+                >
+                  <Image src="/tree-button.png" alt="tree-button" priority width={50} height={50} />
+                </Button>
+                <span className="text-white text-xl">My Tree &gt;</span>
+              </div>
             </div>
           )}
           {steps === 0 && (
