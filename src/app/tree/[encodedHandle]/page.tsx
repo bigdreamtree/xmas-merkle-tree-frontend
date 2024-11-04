@@ -3,7 +3,7 @@
 import Image from "next/image";
 import { Button } from "@nextui-org/react";
 import { useState, useEffect } from "react";
-import { useProof } from "@/hooks/useProof";
+import { useProof, type RevealMessage } from "@/hooks/useProof";
 import toast from "react-hot-toast";
 import { Input, Textarea, Tooltip } from "@nextui-org/react";
 import { sha256, toHex } from "viem";
@@ -28,7 +28,7 @@ export default function UserTree({ params: { encodedHandle } }: { params: { enco
   const [daysUntilChristmas, setDaysUntilChristmas] = useState<number>(-1);
   const [addMsgLoading, setAddMsgLoading] = useState<boolean>(false);
 
-  const { requestFriendshipProof, requestAccountProof, isLoading, friendshipProof } = useProof();
+  const { requestFriendshipProof, revealMessage, isLoading, friendshipProof } = useProof();
 
   // Query for fetching messages
   const { data: messages } = useQuery({
@@ -126,13 +126,14 @@ export default function UserTree({ params: { encodedHandle } }: { params: { enco
                   variant="light"
                   size="lg"
                   onClick={() => {
-                    requestAccountProof({
+                    revealMessage({
+                      treeAccountHash: accountHash,
                       onPageLeave: () => {
                         setPageLoading(true);
                       },
-                      onSuccess: ({ accountId }) => {
+                      onSuccess: (revealedMessages: RevealMessage[]) => {
                         setPageLoading(false);
-                        router.push(`/tree/${encodeURIComponent(accountId)}`);
+                        console.log(revealedMessages);
                       },
                     });
                   }}
@@ -348,7 +349,7 @@ export default function UserTree({ params: { encodedHandle } }: { params: { enco
               <div className="w-[750px] h-[450px] bg-[url('/letter-background.png')] bg-cover bg-center bg-no-repeat rounded-[30px] p-12 flex flex-col justify-start items-center gap-4">
                 <Input
                   value={nickname}
-                  placeholder="TITLE"
+                  placeholder="Nickname"
                   className="!bg-transparent uppercase"
                   classNames={{
                     input: ["!text-letter text-[36px] placeholder:text-[#A5813F]"],

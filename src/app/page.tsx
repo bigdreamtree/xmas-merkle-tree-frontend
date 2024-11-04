@@ -9,7 +9,7 @@ export default function UserTree() {
   const [pageLoading, setPageLoading] = useState<boolean>(false);
   const router = useRouter();
 
-  const { requestAccountProof } = useProof();
+  const { createMerkleTree } = useProof();
 
   return (
     <main className="w-screen h-screen overflow-hidden flex flex-col justify-start items-center">
@@ -44,7 +44,7 @@ export default function UserTree() {
             <span
               className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-white text-6xl cursor-pointer"
               onClick={() => {
-                requestAccountProof({
+                createMerkleTree({
                   onPageLeave: () => {
                     setPageLoading(true);
                   },
