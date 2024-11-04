@@ -27,8 +27,12 @@ export default function UserTree({ params: { encodedHandle } }: { params: { enco
   const router = useRouter();
   const [daysUntilChristmas, setDaysUntilChristmas] = useState<number>(-1);
   const [addMsgLoading, setAddMsgLoading] = useState<boolean>(false);
+  const [pageReveal, setPageReveal] = useState<boolean>(false);
+  const [revealLoading, setRevealLoading] = useState<boolean>(false);
+  const [revealed, setRevealed] = useState<boolean>(false);
+  const [messageOpen, setMessageOpen] = useState<-1 | 0 | 1 | 2 | 3 | 4>(-1);
 
-  const { requestFriendshipProof, revealMessage, isLoading, friendshipProof } = useProof();
+  const { requestFriendshipProof, revealMessage, isLoading, friendshipProof, revealedMessages } = useProof();
 
   // Query for fetching messages
   const { data: messages } = useQuery({
@@ -114,6 +118,127 @@ export default function UserTree({ params: { encodedHandle } }: { params: { enco
             </span>
           </div>
         </div>
+      ) : pageReveal ? (
+        <div className="h-dvh w-full flex flex-col items-center justify-center gap-8 animate-fadeIn">
+          <div className="text-white w-full text-5xl flex justify-center items-center gap-6">
+            <span className="text-white">Verifying your merkle tree 🎄</span>
+          </div>
+          <div className="w-[750px] h-[600px] bg-[url('/letter-background.png')] bg-cover bg-center bg-no-repeat rounded-[30px] p-12 flex flex-col justify-between items-center">
+            <div className="text-2xl flex flex-col justify-start items-start w-full">
+              <span>Root</span>
+              <span className="text-letter">{`${revealedMessages?.[0]?.merkleRoot}`}</span>
+            </div>
+            <div className="w-full h-full flex justify-center items-center flex-col gap-3">
+              <div className={`flex justify-between items-center w-full border-b-1.5 border-letter border-opacity-20`}>
+                <span className="text-2xl text-letter">Orn.</span>
+                <span className="text-2xl text-letter">Nickname</span>
+                <span className="text-2xl w-[200px] truncate text-center text-letter">Message</span>
+                <span className="text-2xl w-[200px] truncate text-center text-letter">Proof</span>
+              </div>
+              {revealedMessages?.map((msg: RevealMessage, idx: number) => (
+                <div key={msg.merkleProof} className={`flex justify-between items-center w-full`} style={{ animation: `fadeIn ${0.5 * (idx + 1)}s ease-in-out forwards` }}>
+                  <span className="text-2xl">
+                    <Image
+                      src={msg.ornamentId === 0 ? "/box.png" : msg.ornamentId === 1 ? "/cookie.png" : msg.ornamentId === 2 ? "/snowman.png" : msg.ornamentId === 3 ? "/stick.png" : "/socks.png"}
+                      alt="tree-button"
+                      priority
+                      width={36}
+                      height={36}
+                      className=""
+                    />
+                  </span>
+                  <span className="text-2xl">{msg.nickname}</span>
+                  <span className="text-2xl text-letter w-[150px] truncate">{`${msg.hash}`}</span>
+                  <span className="text-2xl text-letter w-[150px] truncate">{`${msg.merkleProof}`}</span>
+                </div>
+              ))}
+            </div>
+            <div className="w-full flex justify-center items-center">
+              <Button
+                variant="solid"
+                size="lg"
+                isLoading={revealLoading}
+                onClick={() => {
+                  if (revealed) {
+                    setPageReveal(false);
+                    return;
+                  }
+                  setRevealLoading(true);
+                  // verifyMerkleTree();
+                  setTimeout(() => {
+                    setRevealLoading(false);
+                    setRevealed(true);
+                  }, 4000);
+                }}
+                className="text-2xl bg-letter bg-opacity-80 text-white rounded-full transition-all duration-500"
+              >
+                {revealed ? "Revealed ✅" : "Reveal 📭"}
+              </Button>
+            </div>
+          </div>
+        </div>
+      ) : messageOpen > -1 ? (
+        <div className="h-dvh w-full flex flex-col items-center justify-center gap-8 animate-fadeIn">
+          <div className="text-white w-full text-4xl flex justify-center items-center gap-4 mb-12">
+            <span>Message</span>
+          </div>
+          <div className="relative w-[750px] h-[450px] bg-[url('/letter-background.png')] bg-cover bg-center bg-no-repeat rounded-[30px] p-12 flex flex-col justify-start items-center gap-4">
+            <Image
+              src={
+                revealedMessages?.[messageOpen]?.ornamentId === 0
+                  ? "/box.png"
+                  : revealedMessages?.[messageOpen]?.ornamentId === 1
+                  ? "/cookie.png"
+                  : revealedMessages?.[messageOpen]?.ornamentId === 2
+                  ? "/snowman.png"
+                  : revealedMessages?.[messageOpen]?.ornamentId === 3
+                  ? "/stick.png"
+                  : "/socks.png"
+              }
+              alt="letter"
+              priority
+              width={120}
+              height={120}
+              className="absolute -bottom-8 -right-8 -translate-y-1/2 -translate-x-1/2"
+            />
+            <Input
+              value={revealedMessages?.[messageOpen]?.nickname}
+              // placeholder="Nickname"
+              disabled
+              className="!bg-transparent uppercase"
+              classNames={{
+                input: ["!text-letter text-[36px] placeholder:text-[#A5813F]"],
+                innerWrapper: ["bg-transparent"],
+                inputWrapper: ["bg-transparent hover:!bg-transparent active:!bg-transparent shadow-none focus:!bg-transparent group-data-[focus=true]:!bg-transparent"],
+              }}
+            />
+            <Textarea
+              className="!bg-transparent"
+              disabled
+              classNames={{
+                input: ["!text-letter text-[32px] placeholder:text-[#A5813F]"],
+                innerWrapper: ["bg-transparent"],
+                inputWrapper: ["bg-transparent hover:!bg-transparent active:!bg-transparent shadow-none focus:!bg-transparent group-data-[focus=true]:!bg-transparent"],
+              }}
+              value={revealedMessages?.[messageOpen]?.body}
+            />
+          </div>
+          <div className="button-wrapper flex gap-5 justify-center items-center flex-col">
+            <div className="button-gradient">
+              <Button
+                variant="light"
+                className={`text-white gap-2 font-medium !block z-10 text-2xl hover:!bg-transparent`}
+                radius="full"
+                size="lg"
+                onClick={() => {
+                  setMessageOpen(-1);
+                }}
+              >
+                Close
+              </Button>
+            </div>
+          </div>
+        </div>
       ) : (
         <>
           {steps === 0 && (
@@ -133,6 +258,7 @@ export default function UserTree({ params: { encodedHandle } }: { params: { enco
                       },
                       onSuccess: (revealedMessages: RevealMessage[]) => {
                         setPageLoading(false);
+                        setPageReveal(true);
                         console.log(revealedMessages);
                       },
                     });
@@ -172,35 +298,95 @@ export default function UserTree({ params: { encodedHandle } }: { params: { enco
                 {messages?.find((msg: any) => msg.ornamentId === 3) && (
                   <div className="absolute top-[6rem] left-1/2 -translate-x-[calc(50%+50px)] flex justify-center items-center">
                     <Tooltip offset={0} size="lg" showArrow content={messages?.find((msg: any) => msg.ornamentId === 3)?.nickname}>
-                      <Image src="/stick.png" alt="tree-button" priority width={100} height={100} className="cursor-pointer" />
+                      <Image
+                        src="/stick.png"
+                        alt="tree-button"
+                        priority
+                        width={100}
+                        height={100}
+                        className="cursor-pointer"
+                        onClick={() => {
+                          if (revealed) {
+                            setMessageOpen(3);
+                          }
+                        }}
+                      />
                     </Tooltip>
                   </div>
                 )}
                 {messages?.find((msg: any) => msg.ornamentId === 0) && (
                   <div className="absolute top-[6.5rem] left-1/2 -translate-x-[calc(50%-80px)] flex justify-center items-center gap-6">
                     <Tooltip offset={0} size="lg" showArrow content={messages?.find((msg: any) => msg.ornamentId === 0)?.nickname}>
-                      <Image src="/box.png" alt="tree-button" priority width={100} height={100} className="cursor-pointer" />
+                      <Image
+                        src="/box.png"
+                        alt="tree-button"
+                        priority
+                        width={100}
+                        height={100}
+                        className="cursor-pointer"
+                        onClick={() => {
+                          if (revealed) {
+                            setMessageOpen(0);
+                          }
+                        }}
+                      />
                     </Tooltip>
                   </div>
                 )}
                 {messages?.find((msg: any) => msg.ornamentId === 1) && (
                   <div className="absolute top-[12rem] left-1/2 -translate-x-[calc(50%)] flex justify-center items-center gap-9">
                     <Tooltip offset={0} size="lg" showArrow content={messages?.find((msg: any) => msg.ornamentId === 1)?.nickname}>
-                      <Image src="/cookie.png" alt="tree-button" priority width={100} height={100} className="cursor-pointer" />
+                      <Image
+                        src="/cookie.png"
+                        alt="tree-button"
+                        priority
+                        width={100}
+                        height={100}
+                        className="cursor-pointer"
+                        onClick={() => {
+                          if (revealed) {
+                            setMessageOpen(1);
+                          }
+                        }}
+                      />
                     </Tooltip>
                   </div>
                 )}
                 {messages?.find((msg: any) => msg.ornamentId === 2) && (
                   <div className="absolute top-[14.5rem] left-1/2 -translate-x-[calc(50%-110px)] flex justify-center items-center gap-9">
                     <Tooltip offset={0} size="lg" showArrow content={messages?.find((msg: any) => msg.ornamentId === 2)?.nickname}>
-                      <Image src="/snowman.png" alt="tree-button" priority width={100} height={100} className="cursor-pointer" />
+                      <Image
+                        src="/snowman.png"
+                        alt="tree-button"
+                        priority
+                        width={100}
+                        height={100}
+                        className="cursor-pointer"
+                        onClick={() => {
+                          if (revealed) {
+                            setMessageOpen(2);
+                          }
+                        }}
+                      />
                     </Tooltip>
                   </div>
                 )}
                 {messages?.find((msg: any) => msg.ornamentId === 4) && (
                   <div className="absolute top-[16.5rem] left-1/2 -translate-x-[calc(50%+110px)] flex justify-center items-center gap-9">
                     <Tooltip offset={0} size="lg" showArrow content={messages?.find((msg: any) => msg.ornamentId === 4)?.nickname}>
-                      <Image src="/socks.png" alt="tree-button" priority width={100} height={100} className="cursor-pointer" />
+                      <Image
+                        src="/socks.png"
+                        alt="tree-button"
+                        priority
+                        width={100}
+                        height={100}
+                        className="cursor-pointer"
+                        onClick={() => {
+                          if (revealed) {
+                            setMessageOpen(4);
+                          }
+                        }}
+                      />
                     </Tooltip>
                   </div>
                 )}

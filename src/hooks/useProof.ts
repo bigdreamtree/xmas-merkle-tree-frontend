@@ -13,9 +13,11 @@ export interface StoreState {
   tlsn: any | undefined;
   accountProof: TlsnPluginResponse | undefined;
   friendshipProof: TlsnPluginResponse | undefined;
+  revealedMessages: RevealMessage[] | undefined;
   setTlsn: (newTlsn: any) => void;
   setAccountProof: (newProof: TlsnPluginResponse) => void;
   setFriendshipProof: (newProof: TlsnPluginResponse) => void;
+  setRevealedMessages: (newMessages: RevealMessage[]) => void;
 }
 
 export interface useProofResponse extends StoreState {
@@ -38,9 +40,11 @@ export const useStore = create<StoreState>((set) => ({
   tlsn: undefined,
   accountProof: undefined,
   friendshipProof: undefined,
+  revealedMessages: [],
   setTlsn: (newTlsn) => set({ tlsn: newTlsn }),
   setAccountProof: (newProof) => set({ accountProof: newProof }),
   setFriendshipProof: (newProof) => set({ friendshipProof: newProof }),
+  setRevealedMessages: (newMessages) => set({ revealedMessages: newMessages }),
 }));
 
 export const useProof = () => {
@@ -57,7 +61,7 @@ export const useProof = () => {
 
     let tlsn = tlsnObj.tlsn;
     let pluginId;
-    const { setAccountProof } = tlsnObj;
+    const { setAccountProof, setRevealedMessages } = tlsnObj;
 
     const handleVisibilityChange = () => {
       if (document.hidden) {
@@ -121,7 +125,8 @@ export const useProof = () => {
       }
 
       const revealedMessages: RevealMessage[] = await treeRes.json();
-      console.log(revealedMessages);
+
+      setRevealedMessages(revealedMessages);
       onSuccess?.(revealedMessages);
 
       window.removeEventListener("visibilitychange", handleVisibilityChange);
