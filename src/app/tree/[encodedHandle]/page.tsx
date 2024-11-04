@@ -319,8 +319,8 @@ export default function UserTree({ params: { encodedHandle } }: { params: { enco
               <div className="w-[750px] h-[450px] bg-[url('/letter-background.png')] bg-cover bg-center bg-no-repeat rounded-[30px] p-12 flex flex-col justify-start items-center gap-4">
                 <Input
                   value={nickname}
-                  placeholder="Your Name"
-                  className="!bg-transparent"
+                  placeholder="TITLE"
+                  className="!bg-transparent uppercase"
                   classNames={{
                     input: ["!text-letter text-[36px] placeholder:text-[#A5813F]"],
                     innerWrapper: ["bg-transparent"],
