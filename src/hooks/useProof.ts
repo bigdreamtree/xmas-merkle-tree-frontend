@@ -3,6 +3,7 @@ import { useState } from "react";
 import { TlsnPluginResponse } from "@/models/tlsn-response";
 import { create } from "zustand";
 import toast from "react-hot-toast";
+import { useRouter, usePathname } from "next/navigation";
 
 export interface proofParams {
   req: string;
@@ -35,6 +36,8 @@ export const useStore = create<StoreState>((set) => ({
 export const useProof = () => {
   const tlsnObj = useStore((state) => state);
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const router = useRouter();
+  const pathname = usePathname();
 
   // Account Proof
   const requestAccountProof = async ({ onPageLeave, onSuccess }: { onPageLeave?: () => void; onSuccess?: ({ accountId, accountHash, merkleRoot }: { accountId: string; accountHash: string; merkleRoot: string }) => void }) => {
@@ -102,6 +105,7 @@ export const useProof = () => {
         if (error instanceof Error) {
           // Check if it's a 409 error (conflict)
           if ("status" in error && error.status === 409) {
+            router.push(`/tree/${encodeURIComponent(res.data)}`);
           }
         }
         throw error;
@@ -162,6 +166,7 @@ export const useProof = () => {
     setIsLoading(true);
 
     try {
+      window.open(`https://x.com/0xdarron`, "_blank");
       const res: TlsnPluginResponse = await toast.promise(tlsn.runPlugin(pluginId), {
         loading: "Generating proof in progress...",
         success: "Successfully generated the proof!",

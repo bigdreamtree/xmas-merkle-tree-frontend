@@ -45,8 +45,6 @@ export default function UserTree({ params: { encodedHandle } }: { params: { enco
     },
   });
 
-  console.log(messages);
-
   useEffect(() => {
     const today = new Date();
     const christmas = new Date(today.getFullYear(), 11, 25); // Month is 0-based, so 11 = December
@@ -86,7 +84,6 @@ export default function UserTree({ params: { encodedHandle } }: { params: { enco
 
       setAddMsgLoading(false);
       setSteps(3);
-      console.log(msgRes);
     } catch {
       setAddMsgLoading(false);
       toast.error("Failed to send your gift");
