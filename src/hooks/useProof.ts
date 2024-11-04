@@ -3,7 +3,7 @@ import { useState } from "react";
 import { TlsnPluginResponse } from "@/models/tlsn-response";
 import { create } from "zustand";
 import toast from "react-hot-toast";
-import { useRouter, usePathname } from "next/navigation";
+import { useRouter } from "next/navigation";
 
 export interface proofParams {
   req: string;
@@ -47,7 +47,6 @@ export const useProof = () => {
   const tlsnObj = useStore((state) => state);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const router = useRouter();
-  const pathname = usePathname();
 
   // Account Proof
   const revealMessage = async ({ onPageLeave, onSuccess, treeAccountHash }: { onPageLeave?: () => void; onSuccess?: (revealedMessages: RevealMessage[]) => void; treeAccountHash: string }) => {
