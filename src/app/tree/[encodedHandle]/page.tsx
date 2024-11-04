@@ -266,7 +266,8 @@ export default function UserTree({ params: { encodedHandle } }: { params: { enco
                 >
                   <Image src="/dday.png" alt="tree-button" priority width={50} height={50} />
                 </Button>
-                {daysUntilChristmas >= 0 ? daysUntilChristmas > 0 ? <span className="text-white text-2xl">D-{daysUntilChristmas}</span> : <span className="text-white text-2xl">D-Day</span> : <span className="text-white text-2xl opacity-0">day</span>}
+                <span className="text-white text-2xl">D-Day</span>
+                {/* {daysUntilChristmas >= 0 ? daysUntilChristmas > 0 ? <span className="text-white text-2xl">D-{daysUntilChristmas}</span> : <span className="text-white text-2xl">D-Day</span> : <span className="text-white text-2xl opacity-0">day</span>} */}
               </div>
               <div className="flex flex-col justify-center items-center gap-1">
                 <Button
