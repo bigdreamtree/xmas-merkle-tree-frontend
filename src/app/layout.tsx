@@ -11,8 +11,8 @@ const nanumPenScript = Nanum_Pen_Script({
 });
 
 export const metadata: Metadata = {
-  title: "AfterSchool",
-  description: "Find your scattered friends!",
+  title: "X-mas Merkle Tree",
+  description: "",
 };
 
 export default function RootLayout({
