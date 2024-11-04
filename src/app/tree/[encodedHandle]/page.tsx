@@ -5,7 +5,7 @@ import { Button } from "@nextui-org/react";
 import { useState, useEffect } from "react";
 import { useProof } from "@/hooks/useProof";
 import toast from "react-hot-toast";
-import { Input, Textarea } from "@nextui-org/react";
+import { Input, Textarea, Tooltip } from "@nextui-org/react";
 import { sha256, toHex } from "viem";
 import { useRouter } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
@@ -155,23 +155,41 @@ export default function UserTree({ params: { encodedHandle } }: { params: { enco
               </div>
               <div className="image-wrapper relative w-[500px]">
                 <Image src="/tree.png" alt="tree-background" priority width={657} height={657} />
-                <div className="absolute top-[6rem] left-1/2 -translate-x-[calc(50%+50px)] flex justify-center items-center">
-                  <Image src="/stick.png" alt="tree-button" priority width={100} height={100} />
-                </div>
-                <div className="absolute top-[6.5rem] left-1/2 -translate-x-[calc(50%-80px)] flex justify-center items-center gap-6">
-                  <Image src="/box.png" alt="tree-button" priority width={100} height={100} />
-                </div>
-                <div className="absolute top-[12rem] left-1/2 -translate-x-[calc(50%)] flex justify-center items-center gap-9">
-                  <Image src="/cookie.png" alt="tree-button" priority width={100} height={100} />
-                </div>
-                <div className="absolute top-[14.5rem] left-1/2 -translate-x-[calc(50%-110px)] flex justify-center items-center gap-9">
-                  <Image src="/snowman.png" alt="tree-button" priority width={100} height={100} />
-                </div>
-                {
-                  <div className="absolute top-[16.5rem] left-1/2 -translate-x-[calc(50%+110px)] flex justify-center items-center gap-9">
-                    <Image src="/socks.png" alt="tree-button" priority width={100} height={100} />
+                {messages?.find((msg: any) => msg.ornamentId === 3) && (
+                  <div className="absolute top-[6rem] left-1/2 -translate-x-[calc(50%+50px)] flex justify-center items-center">
+                    <Tooltip offset={0} size="lg" showArrow content={messages?.find((msg: any) => msg.ornamentId === 3)?.nickname}>
+                      <Image src="/stick.png" alt="tree-button" priority width={100} height={100} className="cursor-pointer" />
+                    </Tooltip>
                   </div>
-                }
+                )}
+                {messages?.find((msg: any) => msg.ornamentId === 0) && (
+                  <div className="absolute top-[6.5rem] left-1/2 -translate-x-[calc(50%-80px)] flex justify-center items-center gap-6">
+                    <Tooltip offset={0} size="lg" showArrow content={messages?.find((msg: any) => msg.ornamentId === 0)?.nickname}>
+                      <Image src="/box.png" alt="tree-button" priority width={100} height={100} className="cursor-pointer" />
+                    </Tooltip>
+                  </div>
+                )}
+                {messages?.find((msg: any) => msg.ornamentId === 1) && (
+                  <div className="absolute top-[12rem] left-1/2 -translate-x-[calc(50%)] flex justify-center items-center gap-9">
+                    <Tooltip offset={0} size="lg" showArrow content={messages?.find((msg: any) => msg.ornamentId === 1)?.nickname}>
+                      <Image src="/cookie.png" alt="tree-button" priority width={100} height={100} className="cursor-pointer" />
+                    </Tooltip>
+                  </div>
+                )}
+                {messages?.find((msg: any) => msg.ornamentId === 2) && (
+                  <div className="absolute top-[14.5rem] left-1/2 -translate-x-[calc(50%-110px)] flex justify-center items-center gap-9">
+                    <Tooltip offset={0} size="lg" showArrow content={messages?.find((msg: any) => msg.ornamentId === 2)?.nickname}>
+                      <Image src="/snowman.png" alt="tree-button" priority width={100} height={100} className="cursor-pointer" />
+                    </Tooltip>
+                  </div>
+                )}
+                {messages?.find((msg: any) => msg.ornamentId === 4) && (
+                  <div className="absolute top-[16.5rem] left-1/2 -translate-x-[calc(50%+110px)] flex justify-center items-center gap-9">
+                    <Tooltip offset={0} size="lg" showArrow content={messages?.find((msg: any) => msg.ornamentId === 4)?.nickname}>
+                      <Image src="/socks.png" alt="tree-button" priority width={100} height={100} className="cursor-pointer" />
+                    </Tooltip>
+                  </div>
+                )}
               </div>
               <div className="button-wrapper flex gap-5 justify-center items-center flex-col">
                 <div className="button-gradient">
