@@ -12,13 +12,18 @@ import { useQuery } from "@tanstack/react-query";
 
 export default function UserTree({ params: { encodedHandle } }: { params: { encodedHandle: string } }) {
   const [userHandler] = useState<string>(decodeURIComponent(encodedHandle));
-  const [accountHash] = useState<string>(sha256(toHex(decodeURIComponent(encodedHandle))).slice(2));
+  const [accountHash] = useState<string>(
+    sha256(toHex(decodeURIComponent(encodedHandle)))
+      .toLowerCase()
+      .slice(2)
+  );
   const [ornamentId, setOrnamentId] = useState<number>(-1);
   const [nickname, setNickname] = useState<string>("");
   const [message, setMessage] = useState<string>("");
   const [steps, setSteps] = useState<0 | 1 | 2 | 3>(0);
   const [pageLoading, setPageLoading] = useState<boolean>(false);
   const router = useRouter();
+  const [daysUntilChristmas, setDaysUntilChristmas] = useState<number>(0);
 
   const { requestFriendshipProof, requestAccountProof, isLoading, friendshipProof } = useProof();
 
@@ -36,7 +41,20 @@ export default function UserTree({ params: { encodedHandle } }: { params: { enco
     },
   });
 
-  console.log(messages);
+  useEffect(() => {
+    const today = new Date();
+    const christmas = new Date(today.getFullYear(), 11, 25); // Month is 0-based, so 11 = December
+
+    // If Christmas has passed this year, calculate for next year
+    if (today > christmas) {
+      christmas.setFullYear(christmas.getFullYear() + 1);
+    }
+
+    const timeDiff = christmas.getTime() - today.getTime();
+    const daysDiff = Math.ceil(timeDiff / (1000 * 3600 * 24));
+
+    setDaysUntilChristmas(daysDiff);
+  }, []);
 
   const addMsgHandler = async () => {
     console.log(accountHash);
@@ -45,7 +63,7 @@ export default function UserTree({ params: { encodedHandle } }: { params: { enco
         "Content-Type": "application/json",
       },
       method: "POST",
-      body: JSON.stringify({ nickname, body: message, friendshipProof, merkleRoot: accountHash }),
+      body: JSON.stringify({ ornamentId, nickname, body: message, friendshipProof }),
     });
 
     console.log(msgRes);
@@ -98,7 +116,7 @@ export default function UserTree({ params: { encodedHandle } }: { params: { enco
                 >
                   <Image src="/dday.png" alt="tree-button" priority width={50} height={50} />
                 </Button>
-                <span className="text-white text-xl">My Tree &gt;</span>
+                {daysUntilChristmas > 0 ? <span className="text-white text-2xl">D-{daysUntilChristmas}</span> : <span className="text-white text-2xl">D-Day</span>}
               </div>
               <div className="flex flex-col justify-center items-center gap-1">
                 <Button
@@ -135,18 +153,21 @@ export default function UserTree({ params: { encodedHandle } }: { params: { enco
               </div>
               <div className="image-wrapper relative w-[500px]">
                 <Image src="/tree.png" alt="tree-background" priority width={657} height={657} />
-                {/* <div className="absolute top-[6rem] left-1/2 -translate-x-1/2 flex justify-center items-center">
-              <div className="h-8 w-8 bg-yellow-400 rounded-full" />  
-            </div>
-            <div className="absolute top-[9rem] left-1/2 -translate-x-1/2 flex justify-center items-center gap-6">
-              <div className="h-8 w-8 bg-yellow-400 rounded-full" />
-            </div>
-            <div className="absolute top-[17rem] left-1/2 -translate-x-1/2 flex justify-center items-center gap-9">
-              <div className="h-8 w-8 bg-yellow-400 rounded-full" />
-            </div>
-            <div className="absolute top-[24rem] left-1/2 -translate-x-1/2 flex justify-center items-center gap-9">
-              <div className="h-8 w-8 bg-yellow-400 rounded-full" />
-            </div> */}
+                <div className="absolute top-[6rem] left-1/2 -translate-x-[calc(50%+50px)] flex justify-center items-center">
+                  <Image src="/stick.png" alt="tree-button" priority width={100} height={100} />
+                </div>
+                <div className="absolute top-[6.5rem] left-1/2 -translate-x-[calc(50%-80px)] flex justify-center items-center gap-6">
+                  <Image src="/box.png" alt="tree-button" priority width={100} height={100} />
+                </div>
+                <div className="absolute top-[12rem] left-1/2 -translate-x-[calc(50%)] flex justify-center items-center gap-9">
+                  <Image src="/cookie.png" alt="tree-button" priority width={100} height={100} />
+                </div>
+                <div className="absolute top-[14.5rem] left-1/2 -translate-x-[calc(50%-110px)] flex justify-center items-center gap-9">
+                  <Image src="/snowman.png" alt="tree-button" priority width={100} height={100} />
+                </div>
+                <div className="absolute top-[16.5rem] left-1/2 -translate-x-[calc(50%+110px)] flex justify-center items-center gap-9">
+                  <Image src="/socks.png" alt="tree-button" priority width={100} height={100} />
+                </div>
               </div>
               <div className="button-wrapper flex gap-5 justify-center items-center flex-col">
                 <div className="button-gradient">

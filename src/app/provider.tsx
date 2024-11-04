@@ -3,6 +3,7 @@
 import { NextUIProvider } from "@nextui-org/react";
 import { isServer, QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "react-hot-toast";
+import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 
 function makeQueryClient() {
   return new QueryClient({
@@ -49,6 +50,7 @@ export default function Provider({ children }: { children: React.ReactNode }) {
           },
         }}
       />
+      <ReactQueryDevtools initialIsOpen={false} />
     </QueryClientProvider>
   );
 }

@@ -10,11 +10,11 @@ export interface proofParams {
 
 export interface StoreState {
   tlsn: any | undefined;
-  accountProof: string | undefined;
-  friendshipProof: string | undefined;
+  accountProof: TlsnPluginResponse | undefined;
+  friendshipProof: TlsnPluginResponse | undefined;
   setTlsn: (newTlsn: any) => void;
-  setAccountProof: (newProof: string) => void;
-  setFriendshipProof: (newProof: string) => void;
+  setAccountProof: (newProof: TlsnPluginResponse) => void;
+  setFriendshipProof: (newProof: TlsnPluginResponse) => void;
 }
 
 export interface useProofResponse extends StoreState {
@@ -85,29 +85,8 @@ export const useProof = () => {
         error: "Failed to generate the proof",
       });
       console.log(res);
-      setAccountProof(res.data);
+      setAccountProof(res);
       setIsLoading(false);
-
-      //   //
-      //   // Create Presentation object to parse the proof
-      //   const presentation = await new tlsn.Presentation(res.data);
-      //   const verifierOutput = await presentation.verify();
-
-      //   // Create Transcript to get human-readable data
-      //   const transcript = new tlsn.Transcript({
-      //     sent: verifierOutput.transcript.sent,
-      //     recv: verifierOutput.transcript.recv,
-      //   });
-
-      //   // Add readable transcript to response
-      //   res.transcript = {
-      //     sent: transcript.sent(),
-      //     recv: transcript.recv(),
-      //   };
-
-      //   setAccountProof(res.data);
-      //   console.log("Human readable response:", res.transcript.recv);
-      //   //
 
       const treeRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/v1/trees`, {
         headers: {
@@ -154,10 +133,10 @@ export const useProof = () => {
         tlsn = await window.tlsn!.connect();
         tlsnObj.setTlsn(tlsn);
 
-        const plugin = await tlsn.getPlugins("https://github.com/bigdreamtree/tlsn-plugin/raw/refs/heads/darron/dist/x-following-check.tlsn.wasm", "**", { id: "big-dream-tree-friendship-darron" });
+        const plugin = await tlsn.getPlugins("https://github.com/bigdreamtree/tlsn-plugin/raw/refs/heads/main/dist/x-following-check.tlsn.wasm", "**", { id: "big-dream-tree-friendship-main" });
 
         if (plugin.length === 0) {
-          const res = await tlsn.installPlugin("https://github.com/bigdreamtree/tlsn-plugin/raw/refs/heads/darron/dist/x-following-check.tlsn.wasm", { id: "big-dream-tree-friendship-darron" });
+          const res = await tlsn.installPlugin("https://github.com/bigdreamtree/tlsn-plugin/raw/refs/heads/main/dist/x-following-check.tlsn.wasm", { id: "big-dream-tree-friendship-main" });
           pluginId = res;
         } else {
           pluginId = plugin[0].hash;
@@ -177,9 +156,8 @@ export const useProof = () => {
         success: "Successfully generated the proof!",
         error: "Failed to generate the proof",
       });
-      setFriendshipProof(res.data);
+      setFriendshipProof(res);
       console.log(res);
-      console.log(await decodeAndSetAccountProof(res.data));
 
       setIsLoading(false);
       window.removeEventListener("visibilitychange", handleVisibilityChange);
