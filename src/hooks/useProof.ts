@@ -118,8 +118,8 @@ export const useProof = () => {
       });
 
       const { accountId, accountHash, merkleRoot } = await treeRes.json();
-      console.log(accountId, accountHash, merkleRoot);
-      onSuccess?.({ accountId, accountHash, merkleRoot });
+      console.log(accountId, accountHash.toLowerCase(), merkleRoot);
+      onSuccess?.({ accountId, accountHash: accountHash.toLowerCase(), merkleRoot });
 
       window.removeEventListener("visibilitychange", handleVisibilityChange);
     } catch (err) {
