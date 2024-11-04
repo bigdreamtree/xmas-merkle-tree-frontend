@@ -1,8 +1,7 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { TlsnPluginResponse } from "@/models/tlsn-response";
 import { create } from "zustand";
-// import { TLSN_ACCOUNT_PLUGIN, TLSN_FRIENDSHIP_PLUGIN } from "@/constants/tlsn-plugin";
 import toast from "react-hot-toast";
 
 export interface proofParams {
@@ -85,6 +84,7 @@ export const useProof = () => {
         success: "Successfully generated the proof!",
         error: "Failed to generate the proof",
       });
+      console.log(res);
       setAccountProof(res.data);
       setIsLoading(false);
 
@@ -114,10 +114,11 @@ export const useProof = () => {
           "Content-Type": "application/json",
         },
         method: "POST",
-        body: JSON.stringify({ accountProof: res.data }),
+        body: JSON.stringify({ accountProof: res }),
       });
 
       const { accountId, accountHash, merkleRoot } = await treeRes.json();
+      console.log(accountId, accountHash, merkleRoot);
       onSuccess?.({ accountId, accountHash, merkleRoot });
 
       window.removeEventListener("visibilitychange", handleVisibilityChange);
@@ -153,10 +154,10 @@ export const useProof = () => {
         tlsn = await window.tlsn!.connect();
         tlsnObj.setTlsn(tlsn);
 
-        const plugin = await tlsn.getPlugins("https://github.com/bigdreamtree/tlsn-plugin/raw/refs/heads/main/dist/x-following-check.tlsn.wasm", "**", { id: "big-dream-tree-friendship" });
+        const plugin = await tlsn.getPlugins("https://github.com/bigdreamtree/tlsn-plugin/raw/refs/heads/darron/dist/x-following-check.tlsn.wasm", "**", { id: "big-dream-tree-friendship-darron" });
 
         if (plugin.length === 0) {
-          const res = await tlsn.installPlugin("https://github.com/bigdreamtree/tlsn-plugin/raw/refs/heads/main/dist/x-following-check.tlsn.wasm", { id: "big-dream-tree-friendship" });
+          const res = await tlsn.installPlugin("https://github.com/bigdreamtree/tlsn-plugin/raw/refs/heads/darron/dist/x-following-check.tlsn.wasm", { id: "big-dream-tree-friendship-darron" });
           pluginId = res;
         } else {
           pluginId = plugin[0].hash;
@@ -178,8 +179,8 @@ export const useProof = () => {
       });
       setFriendshipProof(res.data);
       console.log(res);
-      // TODO: decode proof
-      console.log(decodeAndSetAccountProof(res.data));
+      console.log(await decodeAndSetAccountProof(res.data));
+
       setIsLoading(false);
       window.removeEventListener("visibilitychange", handleVisibilityChange);
     } catch (err) {

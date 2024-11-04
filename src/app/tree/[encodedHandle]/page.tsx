@@ -2,17 +2,17 @@
 
 import Image from "next/image";
 import { Button } from "@nextui-org/react";
-import { useState } from "react";
-import { decodeBase64, encodeBase64 } from "@/funcs/base64";
+import { useState, useEffect } from "react";
 import { useProof } from "@/hooks/useProof";
 import toast from "react-hot-toast";
 import { Input, Textarea } from "@nextui-org/react";
 import { sha256, toHex } from "viem";
 import { useRouter } from "next/navigation";
+import { useQuery } from "@tanstack/react-query";
 
 export default function UserTree({ params: { encodedHandle } }: { params: { encodedHandle: string } }) {
-  const [userHandler] = useState<string>(decodeBase64(encodedHandle));
-  const [accountHash] = useState<string>(sha256(toHex(decodeBase64(encodedHandle))));
+  const [userHandler] = useState<string>(decodeURIComponent(encodedHandle));
+  const [accountHash] = useState<string>(sha256(toHex(decodeURIComponent(encodedHandle))).slice(2));
   const [ornamentId, setOrnamentId] = useState<number>(-1);
   const [nickname, setNickname] = useState<string>("");
   const [message, setMessage] = useState<string>("");
@@ -20,7 +20,36 @@ export default function UserTree({ params: { encodedHandle } }: { params: { enco
   const [pageLoading, setPageLoading] = useState<boolean>(false);
   const router = useRouter();
 
-  const { requestFriendshipProof, requestAccountProof, isLoading } = useProof();
+  const { requestFriendshipProof, requestAccountProof, isLoading, friendshipProof } = useProof();
+
+  // Query for fetching messages
+  const { data: messages, isLoading: messagesLoading } = useQuery({
+    queryKey: ["messages", accountHash],
+    queryFn: async () => {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/v1/trees/${accountHash}/messages`, {
+        headers: {
+          "Content-Type": "application/json",
+        },
+        method: "GET",
+      });
+      return res.json();
+    },
+  });
+
+  console.log(messages);
+
+  const addMsgHandler = async () => {
+    console.log(accountHash);
+    const msgRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/v1/trees/${accountHash}/messages`, {
+      headers: {
+        "Content-Type": "application/json",
+      },
+      method: "POST",
+      body: JSON.stringify({ nickname, body: message, friendshipProof, merkleRoot: accountHash }),
+    });
+
+    console.log(msgRes);
+  };
 
   return (
     <main className="w-screen h-screen overflow-hidden flex flex-col justify-start items-center">
@@ -61,7 +90,7 @@ export default function UserTree({ params: { encodedHandle } }: { params: { enco
                     },
                     onSuccess: ({ accountId }) => {
                       setPageLoading(false);
-                      router.push(`/tree/${encodeBase64(accountId)}`);
+                      router.push(`/tree/${encodeURIComponent(accountId)}`);
                     },
                   });
                 }}
@@ -258,6 +287,7 @@ export default function UserTree({ params: { encodedHandle } }: { params: { enco
                     size="lg"
                     onClick={() => {
                       if (nickname.length > 0 && message.length > 0) {
+                        addMsgHandler();
                         setSteps(3);
                       } else {
                         toast("Please fill in all the fields 🧐");
