@@ -149,15 +149,7 @@ export default function UserTree({ params: { encodedHandle } }: { params: { enco
                   variant="light"
                   size="lg"
                   onClick={() => {
-                    requestAccountProof({
-                      onPageLeave: () => {
-                        setPageLoading(true);
-                      },
-                      onSuccess: ({ accountId }) => {
-                        setPageLoading(false);
-                        router.push(`/tree/${encodeURIComponent(accountId)}`);
-                      },
-                    });
+                    router.push(`/`);
                   }}
                 >
                   <Image src="/tree-button.png" alt="tree-button" priority width={50} height={50} />
