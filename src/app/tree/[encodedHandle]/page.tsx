@@ -32,6 +32,8 @@ export default function UserTree({ params: { encodedHandle } }: { params: { enco
   const [revealed, setRevealed] = useState<boolean>(false);
   const [messageOpen, setMessageOpen] = useState<-1 | 0 | 1 | 2 | 3 | 4>(-1);
 
+  console.log(daysUntilChristmas);
+
   const { requestFriendshipProof, revealMessage, isLoading, friendshipProof, revealedMessages } = useProof();
 
   // Query for fetching messages
