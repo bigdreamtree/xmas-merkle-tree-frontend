@@ -158,6 +158,7 @@ export const useProof = () => {
       });
       setFriendshipProof(res);
       console.log(res);
+      await decodeAndSetAccountProof(res.data);
 
       setIsLoading(false);
       window.removeEventListener("visibilitychange", handleVisibilityChange);

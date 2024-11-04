@@ -28,7 +28,7 @@ export default function UserTree({ params: { encodedHandle } }: { params: { enco
   const { requestFriendshipProof, requestAccountProof, isLoading, friendshipProof } = useProof();
 
   // Query for fetching messages
-  const { data: messages, isLoading: messagesLoading } = useQuery({
+  const { data: messages } = useQuery({
     queryKey: ["messages", accountHash],
     queryFn: async () => {
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/v1/trees/${accountHash}/messages`, {
@@ -40,6 +40,8 @@ export default function UserTree({ params: { encodedHandle } }: { params: { enco
       return res.json();
     },
   });
+
+  console.log(messages);
 
   useEffect(() => {
     const today = new Date();
@@ -165,9 +167,11 @@ export default function UserTree({ params: { encodedHandle } }: { params: { enco
                 <div className="absolute top-[14.5rem] left-1/2 -translate-x-[calc(50%-110px)] flex justify-center items-center gap-9">
                   <Image src="/snowman.png" alt="tree-button" priority width={100} height={100} />
                 </div>
-                <div className="absolute top-[16.5rem] left-1/2 -translate-x-[calc(50%+110px)] flex justify-center items-center gap-9">
-                  <Image src="/socks.png" alt="tree-button" priority width={100} height={100} />
-                </div>
+                {
+                  <div className="absolute top-[16.5rem] left-1/2 -translate-x-[calc(50%+110px)] flex justify-center items-center gap-9">
+                    <Image src="/socks.png" alt="tree-button" priority width={100} height={100} />
+                  </div>
+                }
               </div>
               <div className="button-wrapper flex gap-5 justify-center items-center flex-col">
                 <div className="button-gradient">
