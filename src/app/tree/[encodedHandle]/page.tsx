@@ -32,8 +32,6 @@ export default function UserTree({ params: { encodedHandle } }: { params: { enco
   const [revealed, setRevealed] = useState<boolean>(false);
   const [messageOpen, setMessageOpen] = useState<-1 | 0 | 1 | 2 | 3 | 4>(-1);
 
-  console.log(daysUntilChristmas);
-
   const { requestFriendshipProof, revealMessage, isLoading, friendshipProof, revealedMessages } = useProof();
 
   // Query for fetching messages
@@ -60,7 +58,7 @@ export default function UserTree({ params: { encodedHandle } }: { params: { enco
       christmas.setFullYear(christmas.getFullYear() + 1);
     }
 
-    const timeDiff = christmas.getTime() - today.getTime();
+    const timeDiff = christmas.getTime() - today.getTime() > 0 ? christmas.getTime() - today.getTime() : 0;
     const daysDiff = Math.ceil(timeDiff / (1000 * 3600 * 24));
 
     setDaysUntilChristmas(daysDiff);
@@ -69,7 +67,7 @@ export default function UserTree({ params: { encodedHandle } }: { params: { enco
   const addMsgHandler = async () => {
     setAddMsgLoading(true);
     try {
-      const msgRes = await toast.promise(
+      await toast.promise(
         fetch(`${process.env.NEXT_PUBLIC_API_URL}/v1/trees/${accountHash}/messages`, {
           headers: {
             "Content-Type": "application/json",
@@ -85,8 +83,6 @@ export default function UserTree({ params: { encodedHandle } }: { params: { enco
         }
       );
 
-      console.log(msgRes);
-
       await queryClient.invalidateQueries({ queryKey: ["messages", accountHash] });
       await queryClient.refetchQueries({ queryKey: ["messages", accountHash] });
 
@@ -98,8 +94,11 @@ export default function UserTree({ params: { encodedHandle } }: { params: { enco
     }
   };
 
+  console.log(messageOpen);
+
   return (
     <main className="w-screen h-screen overflow-hidden flex flex-col justify-start items-center">
+      {/** Global Loading */}
       {pageLoading ? (
         <div className="h-dvh w-full flex flex-col items-center justify-center gap-8 animate-fadeIn">
           <div className="text-white w-full text-5xl flex justify-center items-center gap-4">
@@ -120,7 +119,8 @@ export default function UserTree({ params: { encodedHandle } }: { params: { enco
             </span>
           </div>
         </div>
-      ) : pageReveal ? (
+      ) : // Page Reveal
+      pageReveal ? (
         <div className="h-dvh w-full flex flex-col items-center justify-center gap-8 animate-fadeIn">
           <div className="text-white w-full text-5xl flex justify-center items-center gap-6">
             <span className="text-white">Verifying your merkle tree 🎄</span>
@@ -159,7 +159,7 @@ export default function UserTree({ params: { encodedHandle } }: { params: { enco
               <Button
                 variant="solid"
                 size="lg"
-                isLoading={revealLoading}
+                isLoading={!revealLoading}
                 onClick={() => {
                   if (revealed) {
                     setPageReveal(false);
@@ -172,31 +172,22 @@ export default function UserTree({ params: { encodedHandle } }: { params: { enco
                     setRevealed(true);
                   }, 4000);
                 }}
-                className="text-2xl bg-letter bg-opacity-80 text-white rounded-full transition-all duration-500"
+                className="text-2xl bg-letter bg-opacity-80 text-white rounded-full transition-all duration-500 [&_span]:!text-[16px]"
               >
                 {revealed ? "Revealed ✅" : "Reveal 📭"}
               </Button>
             </div>
           </div>
         </div>
-      ) : messageOpen > -1 ? (
+      ) : // Message Open
+      messageOpen > -1 ? (
         <div className="h-dvh w-full flex flex-col items-center justify-center gap-8 animate-fadeIn">
           <div className="text-white w-full text-4xl flex justify-center items-center gap-4 mb-12">
             <span>Message</span>
           </div>
           <div className="relative w-[750px] h-[450px] bg-[url('/letter-background.png')] bg-cover bg-center bg-no-repeat rounded-[30px] p-12 flex flex-col justify-start items-center gap-4">
             <Image
-              src={
-                revealedMessages?.[messageOpen]?.ornamentId === 0
-                  ? "/box.png"
-                  : revealedMessages?.[messageOpen]?.ornamentId === 1
-                  ? "/cookie.png"
-                  : revealedMessages?.[messageOpen]?.ornamentId === 2
-                  ? "/snowman.png"
-                  : revealedMessages?.[messageOpen]?.ornamentId === 3
-                  ? "/stick.png"
-                  : "/socks.png"
-              }
+              src={messageOpen === 0 ? "/box.png" : messageOpen === 1 ? "/cookie.png" : messageOpen === 2 ? "/snowman.png" : messageOpen === 3 ? "/stick.png" : "/socks.png"}
               alt="letter"
               priority
               width={120}
@@ -204,7 +195,7 @@ export default function UserTree({ params: { encodedHandle } }: { params: { enco
               className="absolute -bottom-8 -right-8 -translate-y-1/2 -translate-x-1/2"
             />
             <Input
-              value={revealedMessages?.[messageOpen]?.nickname}
+              value={revealedMessages?.find((msg) => msg.ornamentId === messageOpen)?.nickname || ""}
               // placeholder="Nickname"
               disabled
               className="!bg-transparent uppercase"
@@ -222,7 +213,7 @@ export default function UserTree({ params: { encodedHandle } }: { params: { enco
                 innerWrapper: ["bg-transparent"],
                 inputWrapper: ["bg-transparent hover:!bg-transparent active:!bg-transparent shadow-none focus:!bg-transparent group-data-[focus=true]:!bg-transparent"],
               }}
-              value={revealedMessages?.[messageOpen]?.body}
+              value={revealedMessages?.find((msg) => msg.ornamentId === messageOpen)?.body || ""}
             />
           </div>
           <div className="button-wrapper flex gap-5 justify-center items-center flex-col">
@@ -242,6 +233,7 @@ export default function UserTree({ params: { encodedHandle } }: { params: { enco
           </div>
         </div>
       ) : (
+        // tree page
         <>
           {steps === 0 && (
             <div className="absolute top-10 px-10 left-1/2 -translate-x-1/2 flex w-full justify-between items-center">
@@ -253,23 +245,24 @@ export default function UserTree({ params: { encodedHandle } }: { params: { enco
                   variant="light"
                   size="lg"
                   onClick={() => {
-                    revealMessage({
-                      treeAccountHash: accountHash,
-                      onPageLeave: () => {
-                        setPageLoading(true);
-                      },
-                      onSuccess: (revealedMessages: RevealMessage[]) => {
-                        setPageLoading(false);
-                        setPageReveal(true);
-                        console.log(revealedMessages);
-                      },
-                    });
+                    if (daysUntilChristmas === 0 || 1) {
+                      revealMessage({
+                        treeAccountHash: accountHash,
+                        onPageLeave: () => {
+                          setPageLoading(true);
+                        },
+                        onSuccess: (revealedMessages: RevealMessage[]) => {
+                          setPageLoading(false);
+                          setPageReveal(true);
+                          console.log(revealedMessages);
+                        },
+                      });
+                    }
                   }}
                 >
                   <Image src="/dday.png" alt="tree-button" priority width={50} height={50} />
                 </Button>
-                <span className="text-white text-2xl">D-Day</span>
-                {/* {daysUntilChristmas >= 0 ? daysUntilChristmas > 0 ? <span className="text-white text-2xl">D-{daysUntilChristmas}</span> : <span className="text-white text-2xl">D-Day</span> : <span className="text-white text-2xl opacity-0">day</span>} */}
+                {daysUntilChristmas >= 0 ? daysUntilChristmas > 0 ? <span className="text-white text-2xl">D-{daysUntilChristmas}</span> : <span className="text-white text-2xl">D-Day</span> : <span className="text-white text-2xl opacity-0">day</span>}
               </div>
               <div className="flex flex-col justify-center items-center gap-1">
                 <Button
@@ -288,6 +281,7 @@ export default function UserTree({ params: { encodedHandle } }: { params: { enco
               </div>
             </div>
           )}
+          {/** Default */}
           {steps === 0 && (
             <div className="h-dvh w-full max-w-md flex flex-col items-center justify-center gap-8 animate-fadeIn">
               <div className="text-white w-full text-4xl flex justify-center items-center gap-4">
@@ -303,7 +297,7 @@ export default function UserTree({ params: { encodedHandle } }: { params: { enco
                     <Tooltip offset={0} size="lg" showArrow content={messages?.find((msg: any) => msg.ornamentId === 3)?.nickname}>
                       <Image
                         src="/stick.png"
-                        alt="tree-button"
+                        alt="stick-button"
                         priority
                         width={100}
                         height={100}
@@ -417,6 +411,7 @@ export default function UserTree({ params: { encodedHandle } }: { params: { enco
               </div>
             </div>
           )}
+          {/** Select Ornaments Step */}
           {steps === 1 && (
             <div className="h-dvh w-full flex flex-col items-center justify-center gap-8 animate-fadeIn">
               <div className="text-white w-full text-4xl flex justify-center items-center gap-4">
@@ -530,6 +525,7 @@ export default function UserTree({ params: { encodedHandle } }: { params: { enco
               </div>
             </div>
           )}
+          {/** Message Input Step */}
           {steps === 2 && (
             <div className="h-dvh w-full flex flex-col items-center justify-center gap-8 animate-fadeIn">
               <div className="text-white w-full text-4xl flex justify-center items-center gap-4 mb-12">
@@ -586,6 +582,7 @@ export default function UserTree({ params: { encodedHandle } }: { params: { enco
               </div>
             </div>
           )}
+          {/** Result */}
           {steps === 3 && (
             <div className="h-dvh w-full max-w-md flex flex-col items-center justify-center gap-8 animate-fadeIn">
               <div className="text-white w-full text-4xl flex justify-center items-center">
