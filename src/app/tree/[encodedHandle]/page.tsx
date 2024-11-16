@@ -94,8 +94,6 @@ export default function UserTree({ params: { encodedHandle } }: { params: { enco
     }
   };
 
-  console.log(messageOpen);
-
   return (
     <main className="w-screen h-screen overflow-hidden flex flex-col justify-start items-center">
       {/** Global Loading */}
@@ -159,7 +157,7 @@ export default function UserTree({ params: { encodedHandle } }: { params: { enco
               <Button
                 variant="solid"
                 size="lg"
-                isLoading={!revealLoading}
+                isLoading={revealLoading}
                 onClick={() => {
                   if (revealed) {
                     setPageReveal(false);
